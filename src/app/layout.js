@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,12 +23,14 @@ export default function RootLayout({ children }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#165B33" />
       </head>
       <body className="min-h-screen flex flex-col">
-        <main className="flex-grow">
-          {children}
-        </main>
+        <Providers>
+          <main className="grow">
+            {children}
+          </main>
+        </Providers>
       </body>
     </html>
   );
