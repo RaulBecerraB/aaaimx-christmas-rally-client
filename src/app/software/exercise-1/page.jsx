@@ -2,124 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Confetti from 'react-confetti'
-import CheckButton from '../../components/CheckButton' 
-
-// Estilos para evitar la selección de texto durante el arrastre
-const noSelectStyle = {
-    WebkitUserSelect: 'none',
-    MozUserSelect: 'none',
-    msUserSelect: 'none',
-    userSelect: 'none',
-}
-
-// Estilo para la animación de vibración
-const shakeAnimation = {
-    animation: 'shake 0.8s cubic-bezier(.36,.07,.19,.97) both',
-}
-
-// Estilos comunes para mayor compatibilidad
-const commonStyles = {
-    container: {
-        backgroundColor: '#f3f4f6', // bg-gray-100
-        padding: '0.5rem', // p-2
-        width: '100%',
-        minHeight: '100vh',
-        overflow: 'hidden',
-    },
-    mainContainer: {
-        maxWidth: '56rem', // max-w-4xl
-        margin: '0 auto',
-        paddingBottom: '2rem',
-    },
-    title: {
-        fontSize: '1.5rem', // text-2xl
-        fontWeight: 'bold',
-        textAlign: 'center',
-        color: '#111827', // text-gray-900
-        marginBottom: '0.5rem', // mb-2
-    },
-    messageBox: {
-        textAlign: 'center',
-        padding: '0.5rem', // p-2
-        borderRadius: '0.5rem', // rounded-lg
-        marginBottom: '0.5rem', // mb-2
-    },
-    flexContainer: {
-        display: 'flex',
-        gap: '1rem', // gap-4
-        marginTop: '1rem',
-    },
-    panel: {
-        backgroundColor: 'white', // bg-white
-        padding: '1rem', // p-4
-        borderRadius: '0.5rem', // rounded-lg
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', // shadow-lg
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    panelTitle: {
-        fontSize: '0.875rem', // text-sm
-        fontWeight: '600', // font-semibold
-        color: '#374151', // text-gray-700
-        marginBottom: '0.5rem', // mb-2
-    },
-    piecesList: {
-        marginBottom: '1rem', // mb-4
-        flexGrow: 1,
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.5rem', // space-y-2
-    },
-    pieceItem: {
-        backgroundColor: 'white', // bg-white
-        paddingLeft: '0.75rem', // px-3
-        paddingRight: '0.75rem',
-        paddingTop: '0.25rem', // py-1
-        paddingBottom: '0.25rem',
-        borderRadius: '0.25rem', // rounded
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)', // shadow
-        cursor: 'move', // cursor-move
-        transition: 'background-color 0.2s', // transition-colors
-        fontSize: '0.875rem', // text-sm
-    },
-    pieceItemHover: {
-        backgroundColor: '#f9fafb', // hover:bg-gray-50
-    },
-    overlayStyle: {
-        position: 'fixed', // Cambiar a fixed
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
-        backdropFilter: 'blur(4px)', // backdrop-blur-sm
-        backgroundColor: 'rgba(0, 0, 0, 0.3)', // bg-black/30
-        zIndex: 10,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    congratsBox: {
-        backgroundColor: 'white',
-        borderRadius: '0.75rem', // rounded-xl
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', // shadow-2xl
-        padding: '2rem', // p-8
-        textAlign: 'center',
-        maxWidth: '28rem', // max-w-md
-        margin: '0 auto',
-        animation: 'bounce-slow 3s infinite',
-    },
-    congratsTitle: {
-        fontSize: '2.25rem', // text-4xl
-        fontWeight: 'bold',
-        color: '#059669', // text-green-600
-        marginBottom: '1rem', // mb-4
-    },
-    congratsText: {
-        fontSize: '1.25rem', // text-xl
-        color: '#374151', // text-gray-700
-    }
-}
+import CheckButton from '../../components/CheckButton'
+import { exerciseStyles } from '../../theme/index.js'
 
 const HtmlPuzzle = () => {
     const [pieces, setPieces] = useState([
@@ -413,7 +297,7 @@ const HtmlPuzzle = () => {
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '0.875rem', // text-sm
-            ...noSelectStyle
+            ...exerciseStyles.noSelect
         }
 
         const pieceStyle = {
@@ -423,7 +307,7 @@ const HtmlPuzzle = () => {
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'move', // cursor-move
-            ...noSelectStyle
+            ...exerciseStyles.noSelect
         }
 
         return (
@@ -454,20 +338,15 @@ const HtmlPuzzle = () => {
     }
 
     // Variables para especificar las alturas de forma consistente
-    const heights = {
-        h12: '4rem', // Increased from 3rem
-        h10: '3.5rem', // Increased from 2.5rem
-        h28: '14rem', // Increased from 7rem
-        hFull: '100%', // h-full
-    };
+    const heights = exerciseStyles.heights;
 
     return (
         <div
             className="bg-gray-100 p-2"
             style={{
-                ...noSelectStyle,
-                ...(shakeScreen ? shakeAnimation : {}),
-                ...commonStyles.container,
+                ...exerciseStyles.noSelect,
+                ...(shakeScreen ? exerciseStyles.shake : {}),
+                ...exerciseStyles.container,
                 overflow: 'hidden'
             }}
         >
@@ -475,13 +354,13 @@ const HtmlPuzzle = () => {
                 <>
                     {/* Overlay borroso con mensaje de felicitación */}
                     <div className="fixed inset-0 backdrop-blur-sm bg-black/30 z-10 flex items-center justify-center"
-                        style={commonStyles.overlayStyle}>
+                        style={exerciseStyles.overlayStyle}>
                         <div className="bg-white rounded-xl shadow-2xl p-8 text-center max-w-md mx-auto transform animate-bounce-slow"
-                            style={commonStyles.congratsBox}>
+                            style={exerciseStyles.congratsBox}>
                             <h2 className="text-4xl font-bold text-green-600 mb-4"
-                                style={commonStyles.congratsTitle}>¡FELICIDADES!</h2>
+                                style={exerciseStyles.congratsTitle}>¡FELICIDADES!</h2>
                             <p className="text-xl text-gray-700"
-                                style={commonStyles.congratsText}>Has completado correctamente el puzzle de HTML Semántico</p>
+                                style={exerciseStyles.congratsText}>Has completado correctamente el puzzle de HTML Semántico</p>
                         </div>
                     </div>
 
@@ -499,13 +378,13 @@ const HtmlPuzzle = () => {
             <div
                 className={`max-w-4xl mx-auto ${isComplete ? 'blur-sm' : ''}`}
                 style={{
-                    ...commonStyles.mainContainer,
+                    ...exerciseStyles.mainContainer,
                     filter: isComplete ? 'blur(4px)' : 'none',
                 }}
             >
                 <h1
                     className="text-2xl font-bold text-center text-gray-900 mb-2"
-                    style={commonStyles.title}
+                    style={exerciseStyles.title}
                 >
                     HTML Semántico Puzzle
                 </h1>
@@ -515,7 +394,7 @@ const HtmlPuzzle = () => {
                         <div
                             className="text-center p-2 bg-green-100 rounded-lg mb-2"
                             style={{
-                                ...commonStyles.messageBox,
+                                ...exerciseStyles.messageBox,
                                 backgroundColor: '#d1fae5', // bg-green-100
                             }}
                         >
@@ -526,7 +405,7 @@ const HtmlPuzzle = () => {
                         <div
                             className="text-center p-2 bg-red-100 rounded-lg mb-2"
                             style={{
-                                ...commonStyles.messageBox,
+                                ...exerciseStyles.messageBox,
                                 backgroundColor: '#fee2e2', // bg-red-100
                             }}
                         >
@@ -540,7 +419,7 @@ const HtmlPuzzle = () => {
                     <div
                         className="text-center p-2 bg-blue-100 rounded-lg mb-2"
                         style={{
-                            ...commonStyles.messageBox,
+                            ...exerciseStyles.messageBox,
                             backgroundColor: '#dbeafe', // bg-blue-100
                         }}
                     >
@@ -551,13 +430,13 @@ const HtmlPuzzle = () => {
 
                 <div
                     className="flex gap-4"
-                    style={commonStyles.flexContainer}
+                    style={exerciseStyles.flexContainer}
                 >
                     {/* Panel izquierdo con piezas arrastrables */}
                     <div
                         className="w-48 bg-white p-4 rounded-lg shadow-lg flex flex-col"
                         style={{
-                            ...commonStyles.panel,
+                            ...exerciseStyles.panel,
                             width: '12rem', // w-48
                             minHeight: '28rem', // Added minHeight for better vertical spacing
                         }}
@@ -568,11 +447,11 @@ const HtmlPuzzle = () => {
                     >
                         <h2
                             className="text-sm font-semibold text-gray-700 mb-2"
-                            style={commonStyles.panelTitle}
+                            style={exerciseStyles.panelTitle}
                         >Piezas disponibles</h2>
                         <div
                             className="space-y-2 mb-4 grow overflow-y-auto"
-                            style={commonStyles.piecesList}
+                            style={exerciseStyles.piecesList}
                         >
                             {pieces.filter(piece => !Object.values(placedPieces).some(placed => placed.id === piece.id)).map(piece => (
                                 <div
@@ -584,7 +463,7 @@ const HtmlPuzzle = () => {
                                     onTouchEnd={handleTouchEnd}
                                     className="bg-white px-3 py-1 rounded shadow cursor-move hover:bg-gray-50 transition-colors text-sm"
                                     style={{
-                                        ...commonStyles.pieceItem,
+                                        ...exerciseStyles.pieceItem,
                                         backgroundColor: piece.color,
                                         color: '#374151' // text-gray-700
                                     }}
@@ -605,7 +484,7 @@ const HtmlPuzzle = () => {
                     <div
                         className="flex-1 bg-white p-4 rounded-lg shadow-lg flex flex-col"
                         style={{
-                            ...commonStyles.panel,
+                            ...exerciseStyles.panel,
                             flex: 1,
                             minHeight: '28rem', // Added minHeight for better vertical spacing
                         }}

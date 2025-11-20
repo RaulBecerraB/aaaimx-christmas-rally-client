@@ -113,3 +113,155 @@ export const theme = createTheme({
     },
   },
 });
+
+// Estilos reutilizables para componentes de ejercicios
+export const exerciseStyles = {
+  // Propiedades de selección de texto
+  noSelect: {
+    WebkitUserSelect: "none",
+    MozUserSelect: "none",
+    msUserSelect: "none",
+    userSelect: "none",
+  },
+
+  // Animación de vibración
+  shake: {
+    animation: "shake 0.8s cubic-bezier(.36,.07,.19,.97) both",
+  },
+
+  // Contenedor principal
+  container: {
+    backgroundColor: "#FFF5E6",
+    padding: "0.5rem",
+    width: "100%",
+    minHeight: "100vh",
+    overflow: "hidden",
+  },
+
+  // Contenedor de contenido
+  mainContainer: {
+    maxWidth: "56rem",
+    margin: "0 auto",
+    paddingBottom: "2rem",
+  },
+
+  // Título
+  title: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#165B33",
+    marginBottom: "0.5rem",
+  },
+
+  // Caja de mensajes
+  messageBox: {
+    textAlign: "center",
+    padding: "0.5rem",
+    borderRadius: "0.5rem",
+    marginBottom: "0.5rem",
+  },
+
+  // Contenedor flex
+  flexContainer: {
+    display: "flex",
+    gap: "1rem",
+    marginTop: "1rem",
+  },
+
+  // Panel
+  panel: {
+    backgroundColor: "white",
+    padding: "1rem",
+    borderRadius: "0.5rem",
+    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+    display: "flex",
+    flexDirection: "column",
+  },
+
+  // Título del panel
+  panelTitle: {
+    fontSize: "0.875rem",
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: "0.5rem",
+  },
+
+  // Lista de piezas
+  piecesList: {
+    marginBottom: "1rem",
+    flexGrow: 1,
+    overflowY: "auto",
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.5rem",
+  },
+
+  // Pieza individual
+  pieceItem: {
+    backgroundColor: "white",
+    paddingLeft: "0.75rem",
+    paddingRight: "0.75rem",
+    paddingTop: "0.25rem",
+    paddingBottom: "0.25rem",
+    borderRadius: "0.25rem",
+    boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+    cursor: "move",
+    transition: "background-color 0.2s",
+    fontSize: "0.875rem",
+  },
+
+  // Hover en pieza
+  pieceItemHover: {
+    backgroundColor: "#f9fafb",
+  },
+
+  // Overlay para modal
+  overlayStyle: {
+    position: "fixed",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backdropFilter: "blur(4px)",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    zIndex: 10,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // Caja de felicitaciones
+  congratsBox: {
+    backgroundColor: "white",
+    borderRadius: "0.75rem",
+    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+    padding: "2rem",
+    textAlign: "center",
+    maxWidth: "28rem",
+    margin: "0 auto",
+    animation: "bounce-slow 3s infinite",
+  },
+
+  // Título de felicitaciones
+  congratsTitle: {
+    fontSize: "2.25rem",
+    fontWeight: "bold",
+    color: "#C41E3A",
+    marginBottom: "1rem",
+  },
+
+  // Texto de felicitaciones
+  congratsText: {
+    fontSize: "1.25rem",
+    color: "#374151",
+  },
+
+  // Alturas reutilizables
+  heights: {
+    h12: "4rem",
+    h10: "3.5rem",
+    h28: "14rem",
+    hFull: "100%",
+  },
+};
