@@ -19,17 +19,15 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <meta name="theme-color" content="#165B33" />
+        <meta name="theme-color" content="#1976d2" />
       </head>
       <body className="min-h-screen flex flex-col">
         <Providers>
-          <main className="grow">
             {children}
-          </main>
         </Providers>
       </body>
     </html>

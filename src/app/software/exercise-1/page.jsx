@@ -342,7 +342,7 @@ const HtmlPuzzle = () => {
 
     return (
         <div
-            className="bg-gray-100 p-2"
+            className="p-2"
             style={{
                 ...exerciseStyles.noSelect,
                 ...(shakeScreen ? exerciseStyles.shake : {}),
