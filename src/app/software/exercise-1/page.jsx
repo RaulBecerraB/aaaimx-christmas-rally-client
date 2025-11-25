@@ -1,543 +1,192 @@
 'use client'
-
 import { useState, useEffect, useRef } from 'react'
 import Confetti from 'react-confetti'
 import CheckButton from '../../components/CheckButton'
-import { exerciseStyles } from '../../theme/index.js'
+import { Box, Paper, Typography, Grid, Alert, Backdrop } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 
 const HtmlPuzzle = () => {
+    const theme = useTheme()
     const [pieces, setPieces] = useState([
-        { id: 'header', label: '<header>', correct: false, color: '#dbeafe' }, // bg-blue-100
-        { id: 'nav', label: '<nav>', correct: false, color: '#fce7f3' }, // bg-pink-100
-        { id: 'section', label: '<section>', correct: false, color: '#d1fae5' }, // bg-green-100
-        { id: 'aside', label: '<aside>', correct: false, color: '#fee2e2' }, // bg-red-100
-        { id: 'footer', label: '<footer>', correct: false, color: '#f0fdf4' }, // bg-green-50
+        { id: 'header', label: '<header>', color: '#dbeafe' },
+        { id: 'nav', label: '<nav>', color: '#fce7f3' },
+        { id: 'section', label: '<section>', color: '#d1fae5' },
+        { id: 'aside', label: '<aside>', color: '#fee2e2' },
+        { id: 'footer', label: '<footer>', color: '#f0fdf4' },
     ])
 
     const [placedPieces, setPlacedPieces] = useState({})
-    const [nestedPieces, setNestedPieces] = useState({}) // Para piezas anidadas dentro de otras
     const [draggedPiece, setDraggedPiece] = useState(null)
     const [isComplete, setIsComplete] = useState(false)
     const [hasError, setHasError] = useState(false)
     const [showMessage, setShowMessage] = useState(false)
-    const [shakeScreen, setShakeScreen] = useState(false) // Estado para controlar la vibración
-    const [windowDimensions, setWindowDimensions] = useState({
-        width: 0,
-        height: 0
-    })
-
-    // Referencias para manejo de touch events
-    const touchDragRef = useRef({
-        isDragging: false,
-        currentPiece: null,
-        fromArea: null,
-        startX: 0,
-        startY: 0,
-        currentTarget: null,
-        dropTarget: null
-    })
+    const [shakeScreen, setShakeScreen] = useState(false)
+    const [windowDimensions, setWindowDimensions] = useState({ width: 0, height: 0 })
+    const touchDragRef = useRef({ isDragging: false, currentPiece: null, fromArea: null, startX: 0, startY: 0, currentTarget: null, dropTarget: null })
     const elementsRef = useRef({})
 
-    // Inicialización segura para las dimensiones de ventana
     useEffect(() => {
-        // Función para obtener las dimensiones actuales
         const updateDimensions = () => {
-            if (typeof window !== 'undefined') {
-                setWindowDimensions({
-                    width: window.innerWidth,
-                    height: window.innerHeight
-                })
-            }
+            if (typeof window !== 'undefined') setWindowDimensions({ width: window.innerWidth, height: window.innerHeight })
         }
-
-        // Actualizar las dimensiones inmediatamente
         updateDimensions()
-
-        // Configurar evento de resize
         if (typeof window !== 'undefined') {
             window.addEventListener('resize', updateDimensions)
             return () => window.removeEventListener('resize', updateDimensions)
         }
     }, [])
 
-    // Efecto para controlar la animación de vibración
     useEffect(() => {
         if (hasError) {
-            // Activar animación de vibración
             setShakeScreen(true)
-
-            // Desactivar la animación después de que termine
-            const timer = setTimeout(() => {
-                setShakeScreen(false)
-            }, 800) // Aumentamos a 800ms para una vibración más larga
-
+            const timer = setTimeout(() => setShakeScreen(false), 800)
             return () => clearTimeout(timer)
         }
     }, [hasError])
 
-    // Aplicar overflow:hidden a html y body cuando el componente se monte
     useEffect(() => {
         if (typeof document !== 'undefined') {
-            // Guardar los estilos originales
-            const originalHTMLStyle = document.documentElement.style.overflow;
-            const originalBodyStyle = document.body.style.overflow;
-
-            // Aplicar overflow:hidden
-            document.documentElement.style.overflow = 'hidden';
-            document.body.style.overflow = 'hidden';
-
-            // Restaurar los estilos originales cuando el componente se desmonte
+            const origHTML = document.documentElement.style.overflow
+            const origBody = document.body.style.overflow
+            document.documentElement.style.overflow = 'hidden'
+            document.body.style.overflow = 'hidden'
             return () => {
-                document.documentElement.style.overflow = originalHTMLStyle;
-                document.body.style.overflow = originalBodyStyle;
-            };
+                document.documentElement.style.overflow = origHTML
+                document.body.style.overflow = origBody
+            }
         }
-    }, []);
+    }, [])
 
-    // Eventos de arrastre para escritorio
-    const handleDragStart = (e, piece, fromArea = null) => {
-        setDraggedPiece({ ...piece, fromArea })
-    }
-
-    const handleDrop = (e, targetId) => {
-        e.preventDefault()
-        processDrop(targetId)
-    }
-
-    const handleDragOver = (e) => {
-        e.preventDefault()
-    }
-
-    // Función para procesar la caída (común para ambos desktop/mobile)
     const processDrop = (targetId) => {
-        if (draggedPiece) {
-            // Si la pieza viene de otra área y se arrastra a la zona de piezas disponibles
-            if (draggedPiece.fromArea && targetId === 'available') {
-                setPlacedPieces(prev => {
-                    const newPlaced = { ...prev }
-                    delete newPlaced[draggedPiece.fromArea]
-                    return newPlaced
-                })
-            }
-            // Si la pieza viene de otra área y se arrastra a otra área del puzzle
-            else if (draggedPiece.fromArea) {
-                setPlacedPieces(prev => {
-                    const newPlaced = { ...prev }
-                    delete newPlaced[draggedPiece.fromArea]
-                    return {
-                        ...newPlaced,
-                        [targetId]: draggedPiece
-                    }
-                })
-            }
-            // Si viene del panel de piezas disponibles y no se suelta en el mismo panel
-            else if (targetId !== 'available') {
-                setPlacedPieces(prev => ({
-                    ...prev,
-                    [targetId]: draggedPiece
-                }))
-            }
-            // Si se arrastra desde disponibles y se suelta en disponibles, no hacemos nada
-
-            // Ocultar mensajes cuando se hace un cambio
-            setShowMessage(false)
-            setDraggedPiece(null)
+        if (!draggedPiece) return
+        if (draggedPiece.fromArea && targetId === 'available') {
+            setPlacedPieces((p) => { const n = { ...p }; delete n[draggedPiece.fromArea]; return n })
+        } else if (draggedPiece.fromArea) {
+            setPlacedPieces((p) => { const n = { ...p }; delete n[draggedPiece.fromArea]; return { ...n, [targetId]: draggedPiece } })
+        } else if (targetId !== 'available') {
+            setPlacedPieces((p) => ({ ...p, [targetId]: draggedPiece }))
         }
+        setShowMessage(false)
+        setDraggedPiece(null)
     }
 
-    // Eventos táctiles para móviles
     const handleTouchStart = (e, piece, fromArea = null) => {
-        // Prevenir el comportamiento de scroll nativo durante el arrastre
         e.preventDefault()
-
         const touch = e.touches[0]
-        const target = e.currentTarget
-
-        // Guardar información del elemento que se está arrastrando
-        touchDragRef.current = {
-            isDragging: true,
-            currentPiece: piece,
-            fromArea: fromArea,
-            startX: touch.clientX,
-            startY: touch.clientY,
-            currentTarget: target,
-            dropTarget: null
-        }
-
-        // Aplicar estilos para indicar que se está arrastrando
-        target.style.opacity = '0.6'
-        target.style.zIndex = '1000'
-
-        // Actualizar estado para mantener coherencia con la versión de escritorio
+        touchDragRef.current = { isDragging: true, currentPiece: piece, fromArea, startX: touch.clientX, startY: touch.clientY, currentTarget: e.currentTarget, dropTarget: null }
+        e.currentTarget.style.opacity = '0.6'
+        e.currentTarget.style.zIndex = '1000'
         setDraggedPiece({ ...piece, fromArea })
     }
 
     const handleTouchMove = (e) => {
         if (!touchDragRef.current.isDragging) return
-
         const touch = e.touches[0]
         const { currentTarget, startX, startY } = touchDragRef.current
-
-        // Calcular el desplazamiento
         const offsetX = touch.clientX - startX
         const offsetY = touch.clientY - startY
-
-        // Si estamos arrastrando un elemento, moverlo con el dedo
-        if (currentTarget) {
-            currentTarget.style.transform = `translate(${offsetX}px, ${offsetY}px)`
-        }
-
-        // Detectar área donde se está moviendo el dedo
+        if (currentTarget) currentTarget.style.transform = `translate(${offsetX}px, ${offsetY}px)`
         const elementsUnderTouch = document.elementsFromPoint(touch.clientX, touch.clientY)
-
-        // Buscar el área de destino entre los elementos bajo el dedo
-        const dropArea = elementsUnderTouch.find(el =>
-            el.getAttribute('data-drop-area') !== null
-        )
-
-        // Actualizar área de destino actual
-        if (dropArea) {
-            touchDragRef.current.dropTarget = dropArea.getAttribute('data-drop-area')
-        } else {
-            touchDragRef.current.dropTarget = null
-        }
+        const dropArea = elementsUnderTouch.find((el) => el.getAttribute('data-drop-area'))
+        touchDragRef.current.dropTarget = dropArea ? dropArea.getAttribute('data-drop-area') : null
     }
 
-    const handleTouchEnd = (e) => {
+    const handleTouchEnd = () => {
         if (!touchDragRef.current.isDragging) return
-
         const { currentTarget, dropTarget } = touchDragRef.current
-
-        // Restaurar estilos del elemento arrastrado
         if (currentTarget) {
             currentTarget.style.opacity = '1'
             currentTarget.style.transform = 'translate(0, 0)'
             currentTarget.style.zIndex = 'auto'
         }
-
-        // Procesar el drop si tenemos un área de destino válida
-        if (dropTarget) {
-            processDrop(dropTarget)
-        }
-
-        // Reiniciar el estado de arrastre
-        touchDragRef.current = {
-            isDragging: false,
-            currentPiece: null,
-            fromArea: null,
-            startX: 0,
-            startY: 0,
-            currentTarget: null,
-            dropTarget: null
-        }
+        if (dropTarget) processDrop(dropTarget)
+        touchDragRef.current = { isDragging: false, currentPiece: null, fromArea: null, startX: 0, startY: 0, currentTarget: null, dropTarget: null }
     }
 
-    // Verificar si todas las piezas están en el lugar correcto
     const checkPuzzle = () => {
-        // Verificamos que todas las áreas tengan una pieza
-        const allAreasHavePieces = ['header', 'nav', 'section', 'aside', 'footer']
-            .every(area => area in placedPieces);
-
-        // Verificamos que todas las piezas estén en su lugar correcto
-        const allPiecesCorrect = Object.entries(placedPieces).every(
-            ([areaId, piece]) => piece.id === areaId
-        );
-
-        // Solo está completo si todas las áreas tienen piezas Y todas están correctas
-        const isCorrect = allAreasHavePieces && allPiecesCorrect;
-
-        setIsComplete(isCorrect);
-        setHasError(!isCorrect);
-        setShowMessage(true);
-
-        // Si hay error, asegurarnos de que la vibración sea notoria
+        const allAreas = ['header', 'nav', 'section', 'aside', 'footer'].every((a) => a in placedPieces)
+        const allCorrect = Object.entries(placedPieces).every(([id, p]) => p.id === id)
+        const isCorrect = allAreas && allCorrect
+        setIsComplete(isCorrect)
+        setHasError(!isCorrect)
+        setShowMessage(true)
         if (!isCorrect) {
-            // Activar vibración mediante CSS y también usando el estado
-            setShakeScreen(true);
-
-            // Usar try-catch para evitar errores si el elemento no existe
-            try {
-                const screenElement = document.querySelector('.h-screen');
-                if (screenElement) {
-                    screenElement.classList.add('animate-shake');
-                }
-            } catch (e) {
-                console.error("Error al añadir animación", e);
-            }
-
-            setTimeout(() => {
-                setShakeScreen(false);
-
-                try {
-                    const screenElement = document.querySelector('.h-screen');
-                    if (screenElement) {
-                        screenElement.classList.remove('animate-shake');
-                    }
-                } catch (e) {
-                    console.error("Error al remover animación", e);
-                }
-            }, 800);
+            setShakeScreen(true)
+            setTimeout(() => setShakeScreen(false), 800)
         }
     }
 
-    // Definimos los colores de fondo para las diferentes áreas
-    const getAreaBgColor = (areaId) => {
-        const piece = placedPieces[areaId];
-        return piece ? piece.color : '#e5e7eb'; // Default: bg-gray-200
-    };
-
-    // Renderizar una pieza colocada en una zona
-    const renderPlacedPiece = (areaId, height, bgColor) => {
+    const renderPlacedPiece = (areaId, height) => {
         const piece = placedPieces[areaId]
-        const areaStyle = {
-            height: height,
-            backgroundColor: getAreaBgColor(areaId),
-            borderRadius: '0.25rem', // rounded
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '0.875rem', // text-sm
-            ...exerciseStyles.noSelect
-        }
-
-        const pieceStyle = {
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'move', // cursor-move
-            ...exerciseStyles.noSelect
-        }
-
+        const bgColor = piece ? piece.color : '#e5e7eb'
         return (
-            <div
-                data-drop-area={areaId}
-                onDrop={(e) => handleDrop(e, areaId)}
-                onDragOver={handleDragOver}
-                className={`${height} rounded ${piece ? bgColor : 'bg-gray-200'} flex items-center justify-center text-sm`}
-                style={areaStyle}
-                ref={el => elementsRef.current[`drop_${areaId}`] = el}
-            >
+            <Box key={areaId} data-drop-area={areaId} onDrop={(e) => { e.preventDefault(); processDrop(areaId) }} onDragOver={(e) => e.preventDefault()} sx={{ height, backgroundColor: bgColor, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: piece ? 'move' : 'default', transition: 'background-color 0.2s' }} ref={(el) => (elementsRef.current[`drop_${areaId}`] = el)}>
                 {piece ? (
-                    <div
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, piece, areaId)}
-                        onTouchStart={(e) => handleTouchStart(e, piece, areaId)}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                        className="w-full h-full flex items-center justify-center cursor-move"
-                        style={pieceStyle}
-                        ref={el => elementsRef.current[`piece_${piece.id}_${areaId}`] = el}
-                    >
-                        {piece.label}
-                    </div>
-                ) : '?'}
-            </div>
+                    <Box draggable onDragStart={(e) => setDraggedPiece({ ...piece, fromArea: areaId })} onTouchStart={(e) => handleTouchStart(e, piece, areaId)} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'move', userSelect: 'none' }} ref={(el) => (elementsRef.current[`piece_${piece.id}_${areaId}`] = el)}>
+                        <Typography>{piece.label}</Typography>
+                    </Box>
+                ) : (
+                    <Typography sx={{ color: '#999' }}>?</Typography>
+                )}
+            </Box>
         )
     }
 
-    // Variables para especificar las alturas de forma consistente
-    const heights = exerciseStyles.heights;
-
     return (
-        <div
-            className="p-2"
-            style={{
-                ...exerciseStyles.noSelect,
-                ...(shakeScreen ? exerciseStyles.shake : {}),
-                ...exerciseStyles.container,
-                overflow: 'hidden'
-            }}
-        >
+        <Box sx={{ userSelect: 'none', p: 2, overflow: 'hidden', animation: shakeScreen ? 'shake 0.8s cubic-bezier(.36,.07,.19,.97) both' : 'none' }}>
             {isComplete && (
                 <>
-                    {/* Overlay borroso con mensaje de felicitación */}
-                    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 z-10 flex items-center justify-center"
-                        style={exerciseStyles.overlayStyle}>
-                        <div className="bg-white rounded-xl shadow-2xl p-8 text-center max-w-md mx-auto transform animate-bounce-slow"
-                            style={exerciseStyles.congratsBox}>
-                            <h2 className="text-4xl font-bold text-green-600 mb-4"
-                                style={exerciseStyles.congratsTitle}>¡FELICIDADES!</h2>
-                            <p className="text-xl text-gray-700"
-                                style={exerciseStyles.congratsText}>Has completado correctamente el puzzle de HTML Semántico</p>
-                        </div>
-                    </div>
-
-                    {/* Confetti por encima del overlay */}
-                    <Confetti
-                        width={windowDimensions.width}
-                        height={windowDimensions.height}
-                        recycle={false}
-                        numberOfPieces={500}
-                        gravity={0.15}
-                        style={{ position: 'fixed', top: 0, left: 0, zIndex: 20 }}
-                    />
+                    <Backdrop sx={{ zIndex: 10 }} open={true}>
+                        <Box sx={{ backgroundColor: 'white', borderRadius: 3, boxShadow: '0 25px 50px rgba(0, 0, 0, 0.15)', p: 4, textAlign: 'center', maxWidth: '28rem', animation: 'bounce-slow 3s infinite' }}>
+                            <Typography variant="h2" sx={{ color: theme.palette.primary.main, mb: 2, fontWeight: 'bold' }}>¡FELICIDADES!</Typography>
+                            <Typography>Has completado correctamente el puzzle de HTML Semántico</Typography>
+                        </Box>
+                    </Backdrop>
+                    <Confetti width={windowDimensions.width} height={windowDimensions.height} recycle={false} numberOfPieces={500} gravity={0.15} style={{ position: 'fixed', top: 0, left: 0, zIndex: 20 }} />
                 </>
             )}
-            <div
-                className={`max-w-4xl mx-auto ${isComplete ? 'blur-sm' : ''}`}
-                style={{
-                    ...exerciseStyles.mainContainer,
-                    filter: isComplete ? 'blur(4px)' : 'none',
-                }}
-            >
-                <h1
-                    className="text-2xl font-bold text-center text-gray-900 mb-2"
-                    style={exerciseStyles.title}
-                >
-                    HTML Semántico Puzzle
-                </h1>
-
-                {showMessage && (
-                    isComplete ? (
-                        <div
-                            className="text-center p-2 bg-green-100 rounded-lg mb-2"
-                            style={{
-                                ...exerciseStyles.messageBox,
-                                backgroundColor: '#d1fae5', // bg-green-100
-                            }}
-                        >
-                            <p className="text-green-700"
-                                style={{ color: '#047857' }}>¡Felicitaciones! Has completado el puzzle correctamente.</p>
-                        </div>
-                    ) : hasError ? (
-                        <div
-                            className="text-center p-2 bg-red-100 rounded-lg mb-2"
-                            style={{
-                                ...exerciseStyles.messageBox,
-                                backgroundColor: '#fee2e2', // bg-red-100
-                            }}
-                        >
-                            <p className="text-red-700"
-                                style={{ color: '#b91c1c' }}>Hay un error en tu solución. Revisa la posición de los elementos HTML.</p>
-                        </div>
-                    ) : null
-                )}
-
-                {!showMessage && (
-                    <div
-                        className="text-center p-2 bg-blue-100 rounded-lg mb-2"
-                        style={{
-                            ...exerciseStyles.messageBox,
-                            backgroundColor: '#dbeafe', // bg-blue-100
-                        }}
-                    >
-                        <p className="text-blue-700 text-sm"
-                            style={{ color: '#1d4ed8', fontSize: '0.875rem' }}>Arrastra cada elemento a su posición correcta.</p>
-                    </div>
-                )}
-
-                <div
-                    className="flex gap-4"
-                    style={exerciseStyles.flexContainer}
-                >
-                    {/* Panel izquierdo con piezas arrastrables */}
-                    <div
-                        className="w-48 bg-white p-4 rounded-lg shadow-lg flex flex-col"
-                        style={{
-                            ...exerciseStyles.panel,
-                            width: '12rem', // w-48
-                            minHeight: '28rem', // Added minHeight for better vertical spacing
-                        }}
-                        data-drop-area="available"
-                        onDrop={(e) => handleDrop(e, 'available')}
-                        onDragOver={handleDragOver}
-                        ref={el => elementsRef.current['drop_available'] = el}
-                    >
-                        <h2
-                            className="text-sm font-semibold text-gray-700 mb-2"
-                            style={exerciseStyles.panelTitle}
-                        >Piezas disponibles</h2>
-                        <div
-                            className="space-y-2 mb-4 grow overflow-y-auto"
-                            style={exerciseStyles.piecesList}
-                        >
-                            {pieces.filter(piece => !Object.values(placedPieces).some(placed => placed.id === piece.id)).map(piece => (
-                                <div
-                                    key={piece.id}
-                                    draggable
-                                    onDragStart={(e) => handleDragStart(e, piece)}
-                                    onTouchStart={(e) => handleTouchStart(e, piece)}
-                                    onTouchMove={handleTouchMove}
-                                    onTouchEnd={handleTouchEnd}
-                                    className="bg-white px-3 py-1 rounded shadow cursor-move hover:bg-gray-50 transition-colors text-sm"
-                                    style={{
-                                        ...exerciseStyles.pieceItem,
-                                        backgroundColor: piece.color,
-                                        color: '#374151' // text-gray-700
-                                    }}
-                                    ref={el => elementsRef.current[`piece_${piece.id}`] = el}
-                                >
-                                    {piece.label}
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Botón de calificación */}
-                        <div className="mt-2" style={{ marginTop: '0.5rem' }}>
+            <Box sx={{ maxWidth: '56rem', mx: 'auto', pb: 4, filter: isComplete ? 'blur(4px)' : 'none' }}>
+                <Typography variant="h4" sx={{ textAlign: 'center', color: theme.palette.text.primary, mb: 2, fontWeight: 'bold' }}>HTML Semántico Puzzle</Typography>
+                {showMessage && <Alert severity={isComplete ? 'success' : hasError ? 'error' : 'info'} sx={{ mb: 2 }}>{isComplete ? '¡Felicitaciones! Has completado correctamente.' : hasError ? 'Hay un error. Revisa la posición de los elementos.' : 'Arrastra cada elemento a su lugar.'}</Alert>}
+                {!showMessage && <Alert severity="info" sx={{ mb: 2 }}>Arrastra cada elemento a su posición correcta.</Alert>}
+                <Grid container spacing={2}>
+                    <Grid item xs={12} sm={3}>
+                        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: '28rem', backgroundColor: '#f5f5f5' }} data-drop-area="available" onDrop={(e) => { e.preventDefault(); processDrop('available') }} onDragOver={(e) => e.preventDefault()} ref={(el) => (elementsRef.current['drop_available'] = el)}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>Piezas disponibles</Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2, flexGrow: 1, overflowY: 'auto' }}>
+                                {pieces.filter((p) => !Object.values(placedPieces).some((placed) => placed.id === p.id)).map((p) => (
+                                    <Paper key={p.id} draggable onDragStart={() => setDraggedPiece(p)} onTouchStart={(e) => handleTouchStart(e, p)} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} sx={{ backgroundColor: p.color, p: 1, textAlign: 'center', cursor: 'move', userSelect: 'none', transition: 'all 0.2s', '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' } }} ref={(el) => (elementsRef.current[`piece_${p.id}`] = el)}>
+                                        <Typography variant="body2">{p.label}</Typography>
+                                    </Paper>
+                                ))}
+                            </Box>
                             <CheckButton onClick={checkPuzzle} isComplete={isComplete} />
-                        </div>
-                    </div>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={9}>
+                        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: '28rem', backgroundColor: '#f9f9f9' }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
+                                {/* Header */}
+                                <Box>{renderPlacedPiece('header', '4rem')}</Box>
 
-                    {/* Panel derecho con el puzzle */}
-                    <div
-                        className="flex-1 bg-white p-4 rounded-lg shadow-lg flex flex-col"
-                        style={{
-                            ...exerciseStyles.panel,
-                            flex: 1,
-                            minHeight: '28rem', // Added minHeight for better vertical spacing
-                        }}
-                    >
-                        <div
-                            className="grid gap-2"
-                            style={{
-                                display: 'grid',
-                                gap: '0.5rem',
-                                gridTemplateRows: 'auto auto 1fr auto'
-                            }}
-                        >
-                            {/* Header */}
-                            {renderPlacedPiece('header', heights.h12)}
+                                {/* Nav */}
+                                <Box>{renderPlacedPiece('nav', '3.5rem')}</Box>
 
-                            {/* Nav */}
-                            {renderPlacedPiece('nav', heights.h10)}
+                                {/* Main Content - Section and Aside */}
+                                <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 2, flexGrow: 1 }}>
+                                    {renderPlacedPiece('section', '100%')}
+                                    {renderPlacedPiece('aside', '100%')}
+                                </Box>
 
-                            {/* Main content */}
-                            <div
-                                className="grid grid-cols-3 gap-2"
-                                style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                                    gap: '0.5rem'
-                                }}
-                            >
-                                <div
-                                    className="col-span-2 space-y-2"
-                                    style={{
-                                        gridColumn: 'span 2 / span 2',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '0.5rem'
-                                    }}
-                                >
-                                    {/* Section */}
-                                    {renderPlacedPiece('section', heights.h28)}
-                                </div>
-
-                                {/* Aside */}
-                                {renderPlacedPiece('aside', heights.hFull)}
-                            </div>
-
-                            {/* Footer */}
-                            {renderPlacedPiece('footer', heights.h12)}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                                {/* Footer */}
+                                <Box>{renderPlacedPiece('footer', '4rem')}</Box>
+                            </Box>
+                        </Paper>
+                    </Grid>
+                </Grid>
+            </Box>
+        </Box>
     )
 }
 
 export default HtmlPuzzle
-
