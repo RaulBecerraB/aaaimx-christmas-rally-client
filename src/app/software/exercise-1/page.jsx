@@ -149,8 +149,8 @@ const HtmlPuzzle = () => {
                 <Typography variant="h4" sx={{ textAlign: 'center', color: theme.palette.text.primary, mb: 2, fontWeight: 'bold' }}>HTML Semántico Puzzle</Typography>
                 {showMessage && <Alert severity={isComplete ? 'success' : hasError ? 'error' : 'info'} sx={{ mb: 2 }}>{isComplete ? '¡Felicitaciones! Has completado correctamente.' : hasError ? 'Hay un error. Revisa la posición de los elementos.' : 'Arrastra cada elemento a su lugar.'}</Alert>}
                 {!showMessage && <Alert severity="info" sx={{ mb: 2 }}>Arrastra cada elemento a su posición correcta.</Alert>}
-                <Grid container spacing={2}>
-                    <Grid item xs={12} sm={3}>
+                <Grid container spacing={2} sx={{ display: 'flex', gap: 2 }}>
+                    <Grid sx={{ flex: '0 0 200px', minWidth: 0 }}>
                         <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: '28rem', backgroundColor: '#f5f5f5' }} data-drop-area="available" onDrop={(e) => { e.preventDefault(); processDrop('available') }} onDragOver={(e) => e.preventDefault()} ref={(el) => (elementsRef.current['drop_available'] = el)}>
                             <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>Piezas disponibles</Typography>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2, flexGrow: 1, overflowY: 'auto' }}>
@@ -163,7 +163,7 @@ const HtmlPuzzle = () => {
                             <CheckButton onClick={checkPuzzle} isComplete={isComplete} />
                         </Paper>
                     </Grid>
-                    <Grid item xs={12} sm={9}>
+                    <Grid sx={{ flex: '1 1 auto', minWidth: 0 }}>
                         <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: '28rem', backgroundColor: '#f9f9f9' }}>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
                                 {/* Header */}
